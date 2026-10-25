@@ -1,4 +1,6 @@
+from django.conf import settings
 from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.exceptions import Throttled
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, SimpleRateThrottle
@@ -8,11 +10,19 @@ from .serializers import PlanRequestSerializer
 from .services import plan_trip
 
 
-class PlacesThrottle(AnonRateThrottle):
+class ClientThrottle(AnonRateThrottle):
+    """Per-client limit. Behind a proxy that sets a client-IP header, that header is the identity."""
+
+    def get_ident(self, request: Request) -> str:
+        header = settings.CLIENT_IP_HEADER
+        return (header and request.META.get(header)) or super().get_ident(request)
+
+
+class PlacesThrottle(ClientThrottle):
     scope = "places"
 
 
-class PlanThrottle(AnonRateThrottle):
+class PlanThrottle(ClientThrottle):
     scope = "plan"
 
 
@@ -33,8 +43,12 @@ def places(request: Request) -> Response:
 
 
 @api_view(["POST"])
-@throttle_classes([PlanThrottle, AllPlansThrottle])
+@throttle_classes([PlanThrottle])
 def plan(request: Request) -> Response:
     trip = PlanRequestSerializer(data=request.data)
     trip.is_valid(raise_exception=True)
+    # Only valid requests within their client's limit count here, so one client can't block everyone.
+    everyone = AllPlansThrottle()
+    if not everyone.allow_request(request, None):
+        raise Throttled(everyone.wait())
     return Response(plan_trip(**trip.validated_data))

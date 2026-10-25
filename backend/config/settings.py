@@ -58,6 +58,10 @@ MAX_TRIP_MILES = int(os.environ.get("MAX_TRIP_MILES", 930))  # public Valhalla r
 OPEN_METEO_API_KEY = os.environ.get("OPEN_METEO_API_KEY", "")
 MAX_WEATHER_POINTS = int(os.environ.get("MAX_WEATHER_POINTS", 550))  # free Open-Meteo: 600 locations/min
 
+# Request header holding the real client IP, set by the proxy in front of the app
+# (HTTP_CF_CONNECTING_IP behind Cloudflare). Empty means use the connection address.
+CLIENT_IP_HEADER = os.environ.get("CLIENT_IP_HEADER", "")
+
 # The built React app is served from the same origin as the API.
 STATIC_URL = "static/"
 FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"

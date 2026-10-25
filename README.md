@@ -91,6 +91,7 @@ The `Dockerfile` builds the React app and serves it from Django (WhiteNoise) alo
 | `MAX_TRIP_MILES`       | `930`                                    | Longest straight-line trip the routing server accepts |
 | `OPEN_METEO_API_KEY`   | empty                                    | Uses Open-Meteo's commercial API when set          |
 | `MAX_WEATHER_POINTS`   | `550`                                    | Weather samples allowed per plan                   |
+| `CLIENT_IP_HEADER`     | `HTTP_CF_CONNECTING_IP` on Render        | Header with the real client IP, for rate limits    |
 
 `.github/workflows/keep-awake.yml` pings the app every 5 minutes so the free instance doesn't sleep. To enable it, set the repository variable `APP_URL` to the deployed URL.
 
