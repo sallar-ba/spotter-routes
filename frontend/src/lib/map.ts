@@ -95,3 +95,18 @@ export function mileAt(plan: Plan, route: RouteOption, elapsed: number) {
   const [[t0, m0], [t1, m1]] = [stops[next - 1], stops[next]]
   return m0 + ((m1 - m0) * (elapsed - t0)) / (t1 - t0 || 1)
 }
+
+/**
+ * Where a truck on this route has to stop: the last checkpoint before the first no-travel one.
+ * Returns null when the route is drivable all the way.
+ */
+export function stopPoint(plan: Plan, route: RouteOption) {
+  const blocked = route.checkpoints.findIndex((checkpoint) => checkpoint.risk === 4)
+  if (blocked === -1) return null
+  const stop = route.checkpoints[Math.max(blocked - 1, 0)]
+  return {
+    mile: stop.mile,
+    elapsed: (Date.parse(stop.eta) - Date.parse(plan.departure)) / 1000,
+    blockedMile: route.checkpoints[blocked].mile,
+  }
+}

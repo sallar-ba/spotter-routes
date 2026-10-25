@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import type { Plan, RouteOption } from '../api'
 import { formatTime } from '../lib/format'
-import { elapsedAt, mileAt } from '../lib/map'
+import { elapsedAt, mileAt, stopPoint } from '../lib/map'
 import { RISK_LEVELS } from '../lib/risk'
 
 const FORECAST_HOURS = 48
@@ -52,6 +52,8 @@ export function ForecastScrubber({
   }
 
   const time = new Date(Date.parse(plan.heatmap.start) + hour * 3_600_000)
+  const stop = stopPoint(plan, route)
+  const halted = stop !== null && elapsedAt(plan, hour) >= stop.elapsed
   const departHour = -elapsedAt(plan, 0) / 3600
   const arriveHour = Math.min(departHour + route.duration_s / 3600, FORECAST_HOURS)
 
@@ -74,8 +76,12 @@ export function ForecastScrubber({
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-3">
-            <p className="font-bold">{formatTime(time)}</p>
-            <p className="truncate text-sm text-muted">{truckStatus(plan, route, hour)}</p>
+            <p className="shrink-0 font-bold">{formatTime(time)}</p>
+            <p
+              className={`text-right text-sm text-balance ${halted ? 'font-semibold text-no-travel' : 'text-muted'}`}
+            >
+              {truckStatus(plan, route, hour)}
+            </p>
           </div>
           <div className="relative">
             {/* Track, with the selected route's drive highlighted from departure to arrival. */}
@@ -139,6 +145,10 @@ const trackSpan = (hours: number) => `calc((100% - 20px) * ${hours / FORECAST_HO
 
 function truckStatus(plan: Plan, route: RouteOption, hour: number) {
   const elapsed = elapsedAt(plan, hour)
+  const stop = stopPoint(plan, route)
+  if (stop && elapsed >= stop.elapsed) {
+    return `Stopped at mile ${Math.round(stop.mile)}, no travel ahead`
+  }
   if (elapsed <= 0) return `Route ${route.id} hasn't left yet`
   if (elapsed >= route.duration_s) return `Route ${route.id} has arrived`
   return `Mile ${Math.round(mileAt(plan, route, elapsed))} of ${Math.round(route.distance_mi)} on route ${route.id}`

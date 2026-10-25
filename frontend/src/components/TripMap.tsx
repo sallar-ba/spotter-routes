@@ -23,6 +23,7 @@ import {
   heatmapPoints,
   positionAt,
   routeLines,
+  stopPoint,
 } from '../lib/map'
 import { riskColor, riskColorExpression, riskLabel } from '../lib/risk'
 import { EndpointDot } from './EndpointDot'
@@ -102,7 +103,11 @@ export function TripMap({
 
   const popupKey = hoveredKey ?? focus?.key ?? null
   const popup = findCheckpoint(plan, popupKey)
-  const truck = plan && selected && positionAt(selected, elapsedAt(plan, hour))
+  // The truck can't drive into no-travel weather: it waits at the last safe checkpoint.
+  const stop = plan && selected ? stopPoint(plan, selected) : null
+  const elapsed = plan ? elapsedAt(plan, hour) : 0
+  const halted = stop !== null && elapsed >= stop.elapsed
+  const truck = plan && selected && positionAt(selected, halted ? stop.elapsed : elapsed)
 
   function handleMouseMove(event: MapLayerMouseEvent) {
     const feature = event.features?.[0]
@@ -236,8 +241,13 @@ export function TripMap({
         <Marker longitude={truck[0]} latitude={truck[1]}>
           <span
             role="img"
-            aria-label="Truck position at the selected forecast hour"
+            aria-label={
+              halted
+                ? 'Truck stopped before no-travel weather'
+                : 'Truck position at the selected forecast hour'
+            }
             className="grid size-8 place-items-center rounded-full border-2 border-surface bg-ink text-surface shadow-lg"
+            style={halted ? { background: riskColor(4), color: '#fff' } : undefined}
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="currentColor">
               <path d="M2 6h11v9H2zM14 9h4l3 3.5V15h-7zM6 18.5a2 2 0 1 0 0-.01zM17 18.5a2 2 0 1 0 0-.01z" />

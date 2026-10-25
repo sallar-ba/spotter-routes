@@ -46,7 +46,7 @@ Map, route cards, slider ◀──────── JSON: routes, checkpoints, 
    Load rules: wind of 45–54 mph with a load over 30,000 lb is No Travel; 35–44 mph with a load over 40,000 lb is Severe.
 
 5. **Recommendation.** Each checkpoint covers the road halfway to its neighbours, so route miles add up per risk level. Routes are ranked by fewest No Travel miles, then fewest Severe miles, then fewest High miles, then lowest distance-weighted average risk, then shortest travel time. The recommended card names the rule that decided it.
-6. **Heatmap.** The corridor is a regular lat/lon grid around the routes, with cells of 0.1° to 0.5° depending on trip length. Each cell carries its risk level for every hour from 0 to 48, and the map draws them with MapLibre's GPU heatmap layer. The slider switches which hour the layer reads and moves a truck marker along the selected route.
+6. **Heatmap.** The corridor is a regular lat/lon grid around the routes, with cells of 0.1° to 0.5° depending on trip length. Each cell carries its risk level for every hour from 0 to 48, and the map draws them with MapLibre's GPU heatmap layer. The slider switches which hour the layer reads and moves a truck marker along the selected route; on a route with No Travel weather, the truck stops at the last safe checkpoint before it.
 
 ## Run locally
 

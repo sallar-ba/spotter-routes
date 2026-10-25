@@ -50,6 +50,7 @@ interface RouteCardProps {
 }
 
 function RouteCard({ route, reason, selected, onSelect }: RouteCardProps) {
+  const blocked = route.checkpoints.find((checkpoint) => checkpoint.risk === 4)
   return (
     <button
       type="button"
@@ -66,6 +67,14 @@ function RouteCard({ route, reason, selected, onSelect }: RouteCardProps) {
           Recommended: {reason.toLowerCase()}
         </span>
       )}
+      {blocked && (
+        <span className="mb-3 flex items-center gap-1.5 text-[13px] font-bold text-no-travel">
+          <svg viewBox="0 0 16 16" className="size-3.5" fill="currentColor" aria-hidden="true">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM4.5 7.25h7a.75.75 0 0 1 0 1.5h-7a.75.75 0 0 1 0-1.5Z" />
+          </svg>
+          Not safe to drive: no-travel weather at mile {Math.round(blocked.mile)}
+        </span>
+      )}
       <span className="flex items-center gap-3">
         <Shield label={route.id} muted={!selected} className="size-9 shrink-0" />
         <span className="min-w-0 flex-1">
@@ -74,7 +83,8 @@ function RouteCard({ route, reason, selected, onSelect }: RouteCardProps) {
             {route.name}
           </span>
           <span className="block text-sm text-muted">
-            {formatMiles(route.distance_mi)}, arrives {formatTime(route.arrival)}
+            {formatMiles(route.distance_mi)},{' '}
+            <span className="whitespace-nowrap">arrives {formatTime(route.arrival)}</span>
           </span>
         </span>
         <span className="shrink-0 text-lg font-bold tracking-tight">

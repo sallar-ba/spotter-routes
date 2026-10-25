@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Plan, RouteOption } from '../api'
-import { elapsedAt, findCheckpoint, heatmapPoints, mileAt, positionAt } from './map'
+import { elapsedAt, findCheckpoint, heatmapPoints, mileAt, positionAt, stopPoint } from './map'
 
 const route = {
   id: 'A',
@@ -78,5 +78,33 @@ describe('mileAt', () => {
   it('stays at 0 before departure and at the full distance after arrival', () => {
     expect(mileAt(trip, leg, -60)).toBe(0)
     expect(mileAt(trip, leg, 7200)).toBe(50)
+  })
+})
+
+describe('stopPoint', () => {
+  const trip = { departure: '2030-01-01T10:00:00Z', routes: [] } as unknown as Plan
+  const checkpoint = (mile: number, hour: number, risk: number) => ({
+    mile,
+    risk,
+    eta: `2030-01-01T1${hour}:00:00Z`,
+  })
+
+  it('stops at the last checkpoint before the first no-travel one', () => {
+    const leg = {
+      checkpoints: [
+        checkpoint(0, 0, 0),
+        checkpoint(25, 1, 1),
+        checkpoint(50, 2, 4),
+        checkpoint(75, 3, 4),
+      ],
+    } as unknown as RouteOption
+    expect(stopPoint(trip, leg)).toEqual({ mile: 25, elapsed: 3600, blockedMile: 50 })
+  })
+
+  it('returns null for a drivable route', () => {
+    const leg = {
+      checkpoints: [checkpoint(0, 0, 0), checkpoint(25, 1, 3)],
+    } as unknown as RouteOption
+    expect(stopPoint(trip, leg)).toBeNull()
   })
 })
