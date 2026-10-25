@@ -48,7 +48,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [],
     "UNAUTHENTICATED_USER": None,
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_THROTTLE_RATES": {"plan": "10/min", "places": "120/min"},  # per client IP
+    # Per client IP, plus one cap across all clients that keeps plans inside the free weather quota.
+    "DEFAULT_THROTTLE_RATES": {"plan": "10/min", "plan_all": "30/min", "places": "120/min"},
 }
 
 # Third-party services.

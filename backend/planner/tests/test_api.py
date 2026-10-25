@@ -19,8 +19,8 @@ class PlanEndpointTests(SimpleTestCase):
     def setUp(self):
         cache.clear()  # rate-limit counters live in the cache
 
-    def post(self, body):
-        return self.client.post("/api/plan", body, content_type="application/json")
+    def post(self, body, ip="127.0.0.1"):
+        return self.client.post("/api/plan", body, content_type="application/json", REMOTE_ADDR=ip)
 
     def test_rejects_past_departure_and_unknown_interval(self):
         response = self.post(trip(departure="2001-01-01T00:00:00Z", interval_mi=15))
@@ -38,3 +38,8 @@ class PlanEndpointTests(SimpleTestCase):
         statuses = [self.post(trip(interval_mi=15)).status_code for _ in range(11)]
 
         self.assertEqual(statuses, [400] * 10 + [429])
+
+    def test_caps_plans_across_all_clients(self):
+        statuses = [self.post(trip(interval_mi=15), ip=f"10.0.0.{n}").status_code for n in range(31)]
+
+        self.assertEqual(statuses, [400] * 30 + [429])
