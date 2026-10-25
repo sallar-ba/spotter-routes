@@ -2,9 +2,12 @@
 
 Weather-aware truck routing. Enter an origin, a destination, a departure time and a load weight. The app finds three truck routes, checks the forecast for the hour the truck reaches each checkpoint, scores every route against the risk and load rules, and recommends the safest one. A heatmap with a 0–48 h slider shows the weather along the trip corridor.
 
-**Live app:** _add the URL after deploying_
+**Live app:** https://spotter-routes.onrender.com
 
-![The truck on route C reaches a moderate rain cell near Ruidoso, NM, 2.5 hours after departure](.github/screenshot.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/screenshot-dark.png">
+  <img alt="Lubbock to Amarillo: two routes cross no-travel rain, so the app recommends route A" src=".github/screenshot.png">
+</picture>
 
 ## Stack
 
