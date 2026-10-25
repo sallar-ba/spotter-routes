@@ -11,12 +11,14 @@ export const formatTime = (iso: string | Date) => time.format(new Date(iso))
 export function formatDuration(seconds: number) {
   const minutes = Math.round(seconds / 60)
   const hours = Math.floor(minutes / 60)
-  return hours ? `${hours} h ${String(minutes % 60).padStart(2, '0')} m` : `${minutes} m`
+  return hours
+    ? `${hours}\u00a0h ${String(minutes % 60).padStart(2, '0')}\u00a0m`
+    : `${minutes}\u00a0m`
 }
 
 /** "1,017 mi", "12.5 mi" */
 export const formatMiles = (miles: number) =>
-  `${miles.toLocaleString(undefined, { maximumFractionDigits: 1 })} mi`
+  `${miles.toLocaleString(undefined, { maximumFractionDigits: 1 })}\u00a0mi`
 
 /** "0.00", "0.098": precipitation at the forecast's own precision. */
 export const formatInches = (inches: number) =>

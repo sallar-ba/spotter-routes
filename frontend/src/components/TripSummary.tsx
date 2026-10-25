@@ -28,8 +28,8 @@ export function TripSummary({ trip, onEdit }: TripSummaryProps) {
           <span className="font-normal text-muted">, {trip.destination.detail}</span>
         </p>
         <p className="mt-3 text-sm text-muted">
-          Leaves {formatTime(trip.departure)} with {trip.load_lb.toLocaleString()} lb, checking
-          every {trip.interval_mi} mi
+          Leaves {formatTime(trip.departure)} with {trip.load_lb.toLocaleString()}&nbsp;lb, checking
+          every {trip.interval_mi}&nbsp;mi
         </p>
       </div>
       <button

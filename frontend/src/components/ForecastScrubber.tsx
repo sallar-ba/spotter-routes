@@ -5,7 +5,8 @@ import { elapsedAt, mileAt, stopPoint } from '../lib/map'
 import { RISK_LEVELS } from '../lib/risk'
 
 const FORECAST_HOURS = 48
-const HOURS_PER_SECOND = 3 // playback speed
+const SPEEDS = [1, 2, 4] as const
+const HOURS_PER_SECOND_AT_1X = 1.5 // 1× plays the 48 hours in 32 seconds
 const TICKS = [0, 12, 24, 36, 48]
 
 interface ForecastScrubberProps {
@@ -27,6 +28,7 @@ export function ForecastScrubber({
   onShowHeatmapChange,
 }: ForecastScrubberProps) {
   const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(2)
   const playFrom = useRef(0)
 
   // Advance continuously so the truck drives instead of jumping an hour at a time.
@@ -34,7 +36,7 @@ export function ForecastScrubber({
     if (!playing) return
     const startedAt = performance.now()
     let frame = requestAnimationFrame(function tick(now) {
-      const next = playFrom.current + ((now - startedAt) / 1000) * HOURS_PER_SECOND
+      const next = playFrom.current + ((now - startedAt) / 1000) * HOURS_PER_SECOND_AT_1X * speed
       if (next >= FORECAST_HOURS) {
         onHourChange(FORECAST_HOURS)
         setPlaying(false)
@@ -44,11 +46,16 @@ export function ForecastScrubber({
       frame = requestAnimationFrame(tick)
     })
     return () => cancelAnimationFrame(frame)
-  }, [playing, onHourChange])
+  }, [playing, speed, onHourChange])
 
   function togglePlay() {
     playFrom.current = hour >= FORECAST_HOURS ? 0 : hour
     setPlaying(!playing)
+  }
+
+  function changeSpeed(next: (typeof SPEEDS)[number]) {
+    playFrom.current = hour // keep going from here at the new speed
+    setSpeed(next)
   }
 
   const time = new Date(Date.parse(plan.heatmap.start) + hour * 3_600_000)
@@ -125,15 +132,35 @@ export function ForecastScrubber({
             </li>
           ))}
         </ul>
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-          <input
-            type="checkbox"
-            checked={showHeatmap}
-            onChange={(event) => onShowHeatmapChange(event.target.checked)}
-            className="size-4 accent-shield"
-          />
-          Weather layer
-        </label>
+        <div className="flex items-center gap-4">
+          <div
+            role="group"
+            aria-label="Playback speed"
+            className="flex rounded-md border border-line bg-paper p-0.5"
+          >
+            {SPEEDS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => changeSpeed(option)}
+                aria-pressed={speed === option}
+                aria-label={`${option}× speed`}
+                className="rounded px-2 py-0.5 text-xs font-semibold text-muted transition-colors hover:text-ink aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-sm"
+              >
+                {option}×
+              </button>
+            ))}
+          </div>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={showHeatmap}
+              onChange={(event) => onShowHeatmapChange(event.target.checked)}
+              className="size-4 accent-shield"
+            />
+            Weather layer
+          </label>
+        </div>
       </div>
     </div>
   )
